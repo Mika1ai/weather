@@ -11,6 +11,7 @@
 	margin: 0;
 	padding: 0;
   box-sizing: border-box;
+  scrollbar-width: none;
 }
 
 ul[role='list'],
@@ -22,8 +23,11 @@ body {
   font-family: 'Poppins', sans-serif;
   font-weight: 100;
   line-height: 1em;
-  min-height: 100vh;
+  height: 100vh;
   text-rendering: optimizeSpeed;
+  text-align: center;
+  background-color: var(--color-bg);
+  color: var(--color-primary);
 }
 
 img,
@@ -48,7 +52,7 @@ select {
 }
 
 ::-webkit-scrollbar {
-  width: 0.25rem;
+  width: 0;
 }
 ::-webkit-scrollbar-thumb {
   background-color: var(--color-bg-lighter);

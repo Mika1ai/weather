@@ -1,42 +1,21 @@
 <template>
   <div
     class="card"
-    :class="{
-      'card--loading': isCardLoading,
-      'card--loaded': isCardLoaded,
-    }"
+    :class="{ 'card--loaded' : isCardLoaded }"
   >
     <button
-      type="button"
       class="card__cross"
-      @click="cityCancel"
+      type="button"
+      @click="deleteCity"
     ></button>
-    <ul
-      role="list"
-      class="card__list"
-    >
-      <li
-        role="listitem"
-        class="card__list-item"
-        v-for="city in cities"
-        :key="city"
-        @click="citySelection(city)"
-      >
-        {{ city }}
-      </li>
-    </ul>
-    <div class="card__city">
-      <div class="card__name">
-        {{ cityData.name }}
-      </div>
-      <div class="card__data">
-        <div class="card__temp">
-          {{ this.tempFormat }}{{ this.unitValue }}
-        </div>
-        <div class="card__description">
-          {{ cityData.description }}
-        </div>
-      </div>
+    <div class="card__name">
+      {{ city }}
+    </div>
+    <div class="card__temp">
+      {{ this.tempFormat }}{{ this.unitValue }}
+    </div>
+    <div class="card__description">
+      {{ cityData.description }}
     </div>
   </div>
 </template>
@@ -45,17 +24,16 @@
 export default {
   name: 'WeatherCard',
   props: {
-    cities: Array,
+    city: String,
     unitValue: String,
   },
   data() {
     return {
-      isCardLoading: false,
       isCardLoaded: false,
       cityData: {
-        name: '',
         temp: 0,
         description: '',
+        time: 0,
       },
     };
   },
@@ -75,36 +53,50 @@ export default {
           tempNew = this.cityData.temp;
         }
       }
-      return Math.round(tempNew) 
+      return Math.round(tempNew);
+    }
+  },
+  mounted() {
+    if (sessionStorage.getItem(this.city)) {
+      const storageData = JSON.parse(sessionStorage.getItem(this.city));
+      const millisecondsPerMinute = 60 * 1000;
+
+      if ((Date.now() - storageData.time) / millisecondsPerMinute > 5) {
+        this.updateData();
+      } else {
+        this.cityData.temp = storageData.temp;
+        this.cityData.description = storageData.description;
+
+        this.isCardLoaded = true;
+      }
+    } else {
+      this.updateData();
     }
   },
   methods: {
-    citySelection(city) {
+    deleteCity() {
+      this.$emit('deleteCity', this.city);
+    },
+    updateData() {
+      this.isCardLoaded = false;
+
       const apiKey = '6ccafd44ac9ae5d3cda1ed97f1a23f2f';
-
-      this.cityData.name = city;
-      this.isCardLoading = true;
-
-      this.$emit('addCity', this.cityData.name);
-
       const axios = require('axios').default;
       axios
         .get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`
+          `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${apiKey}`
         )
         .then((response) => {
           this.cityData.temp = response.data.main.temp;
           this.cityData.description = response.data.weather[0].description;
+          this.cityData.time = Date.now();
 
-          this.isCardLoading = false;
+          sessionStorage.setItem(this.city, JSON.stringify(this.cityData));
+          
           this.isCardLoaded = true;
         });
-    },
-    cityCancel() {
-      this.isCardLoaded = false;
-      this.$emit('removeCity', this.cityData.name);
     }
-  },
+  }
 };
 </script>
 
@@ -113,50 +105,19 @@ export default {
   position: relative;
   width: 20rem;
   height: 20rem;
-  background-color: var(--color-bg);
-  border: solid 2px var(--color-bg-light);
-  transition: border-color 0.3s ease;
-
-  &:not(.card--loading, .card--loaded)::after {
-    content: "+";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    z-index: 2;
-    color: var(--color-primary);
-    background-color: var(--color-bg);
-    opacity: 1;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-light);
+  border: solid 2px var(--color-bg-lighter);
+  transition: all 0.3s ease;
 
   &:hover {
-    border-color: var(--color-bg-lighter);
-    &::after {
-      opacity: 0;
+    .card__cross {
+      opacity: 1;
     }
   }
-}
-.card.card--loading,
-.card.card--loaded {
-  .card__list {
-    height: 0%;
-  }
-  .card__city {
-    height: 100%;
-  }
-}
-.card.card--loaded:hover {
-  .card__cross {
-    opacity: 1;
-  }
-
 }
 
 .card__cross {
@@ -164,23 +125,24 @@ export default {
   z-index: 2;
   top: 0;
   right: 0;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-lighter);
+  background-color: var(--color-bg-light);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
-
+  border-bottom: solid 2px var(--color-bg-lighter);
+  border-left: solid 2px var(--color-bg-lighter);
   &::before,
   &::after {
     content: "";
     position: absolute;
-    width: 100%;
-    height: 2px;
-    background-color: var(--color-bg);
+    width: 1.5rem;
+    height: 1px;
+    background-color: var(--color-primary);
   }
   &::before {
     transform: rotate(45deg);
@@ -188,72 +150,52 @@ export default {
   &::after {
     transform: rotate(-45deg);
   }
-}
-
-.card__list {
-  height: 100%;
-  overflow-y: overlay;
-  transition: height 1s ease;
-}
-
-.card__list-item {
-  text-align: center;
-  text-transform: uppercase;
-  width: 100%;
-  font-size: 2.5rem;
-  line-height: 2em;
-  color: var(--color-primary);
-  background-color: var(--color-bg);
-  cursor: pointer;
-
   &:hover {
-    background-color: var(--color-bg-light);
+    background-color: var(--color-bg-lighter);
   }
-}
-
-.card__city {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: var(--color-primary);
-  height: 0%;
-  transition: height 1s ease;
-  overflow: hidden;
-  text-transform: uppercase;
+  &:focus-visible {
+    outline: solid 2px var(--color-primary);
+    outline-offset: -2px;
+    background-color: var(--color-bg-lighter);
+    opacity: 1;
+  }
 }
 
 .card__name {
   font-size: 2.5rem;
-  line-height: 1em;
-  transition: font-size 0.75s ease 0.5s;
-}
-.card__data {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  row-gap: 0.5rem;
-  overflow: hidden;
-  transition: height 0.75s ease 0.5s;
-  height: 0;
+  height: 1.5em;
+  line-height: 1.5em;
+  text-transform: uppercase;
 }
 .card__temp {
   font-size: 3.5rem;
-  line-height: 1em;
+  height: 0;
+  line-height: 1.5em;
+  overflow: hidden;
 }
 .card__description {
   font-size: 1rem;
-  line-height: 1em;
+  height: 0;
+  line-height: 1.5em;
+  overflow: hidden;
+  text-transform: uppercase;
 }
 
-.card.card--loaded {
+.card--loaded {
   .card__name {
     font-size: 1.5rem;
+    transition: all 1s ease 0.5s;
   }
-  .card__data {
-    height: 6rem;
+  .card__temp {
+    height: 1.5em;
+    margin-top: 1rem;
+    transition: all 1s ease 0.5s;
+  }
+  .card__description {
+    height: 1.5em;
+    line-height: 1.5em;
+    transition: all 1s ease 0.5s;
   }
 }
+
 </style>
