@@ -33,14 +33,14 @@ export default {
       cityData: {
         temp: 0,
         description: '',
-        time: 0,
+        time: 0, // lastUpdated / lastUpdatedTime
       },
     };
   },
   computed: {
-    tempFormat() {
+    tempFormat() { // Можно просто temperature, но так тоже хорошо
       let tempNew;
-      switch(this.unitValue) {
+      switch(this.unitValue) { // Вынеси в отдельную папку utils, не мешай логику компонента и вспомогательную
         case '°C': {
           tempNew = this.cityData.temp - 273.15;
           break;
@@ -60,6 +60,7 @@ export default {
     if (sessionStorage.getItem(this.city)) {
       const storageData = JSON.parse(sessionStorage.getItem(this.city));
       const millisecondsPerMinute = 60 * 1000;
+      // const refreshDelay = millisecondsPerMinute * 5; Я бы что-нибудь такое еще добавил.
 
       if ((Date.now() - storageData.time) / millisecondsPerMinute > 5) {
         this.updateData();
@@ -80,8 +81,12 @@ export default {
     updateData() {
       this.isCardLoaded = false;
 
-      const apiKey = '6ccafd44ac9ae5d3cda1ed97f1a23f2f';
-      const axios = require('axios').default;
+      const apiKey = '6ccafd44ac9ae5d3cda1ed97f1a23f2f'; // Ключ в приватный файл, его на гит не заливай
+      const axios = require('axios').default; // Импорты исключительно в начале js, и не через require, он не используется в модульном js
+      /**
+       * Все запросы к серверу в папочку services и импортируй из нее.
+       * И хорошо бы добавить обработку ошибок.
+       */
       axios
         .get(
           `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${apiKey}`
@@ -92,7 +97,7 @@ export default {
           this.cityData.time = Date.now();
 
           sessionStorage.setItem(this.city, JSON.stringify(this.cityData));
-          
+
           this.isCardLoaded = true;
         });
     }
@@ -105,6 +110,7 @@ export default {
   position: relative;
   width: 20rem;
   height: 20rem;
+  // padding: 2em; Ну или что-то подобное. Не забывай про него
   display: flex;
   flex-direction: column;
   align-items: center;
