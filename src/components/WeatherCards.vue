@@ -1,6 +1,13 @@
 <template>
 <div class="content">
+  <!--
+   Вообще надо надробить на более мелкие компоненты:
+   1. Search
+   2. Settings (Format settings (конкретно select, тоже можно в отдельный компонент) + кнопочка Update)
+   3. Cities list (Список + кнопочки под ним)
+   -->
   <div class="search">
+    <!-- Ну по хорошему это форма должна быть (дед) -->
     <input
       class="search__input"
       type="text"
@@ -12,15 +19,19 @@
       type="button"
       @click="searchClear"
     ></button>
+    <!-- А вот была бы форма, мог бы через input type="reset" сделать
+     https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/reset -->
   </div>
   <ul class="list"
     role="list"
   >
+  <!-- У тебя же роли по умолчанию есть, зачем еще раз проставлять?  -->
     <li
       role="listitem"
       v-for="cityFiltered in citiesFiltered"
       :key="cityFiltered"
     >
+      <!-- Роли -->
       <input
         type="checkbox"
         v-model="citiesSelected"
@@ -32,6 +43,10 @@
         :for="cityFiltered"
         tabindex="0"
       >
+      <!--
+       Мегазабавно, что я могу сфокусироваться на лэйбле, но не могу выбрать его с клавы.
+       Проблвма HTML, но все же
+      -->
         {{ cityFiltered }}
       </label>
     </li>
@@ -49,6 +64,7 @@
       @click="clearAll"
       :disabled="isCardsEmpty"
     >Clear All</button>
+    <!-- Кстати, было бы это вместе со списком формой, мог бы reset использовать  -->
   </div>
   <div class="settings">
     <button
@@ -111,7 +127,7 @@ export default {
       return this.citiesSelected.length === 0
     },
     citiesFiltered() {
-      return this.cities.filter(city => 
+      return this.cities.filter(city =>
       city.slice(0, this.searchValue.length).toLowerCase() === this.searchValue.toLowerCase())
     }
   },
@@ -120,6 +136,10 @@ export default {
       this.searchValue = '';
     },
     selectAll() {
+      /**
+       * Порадовало что не просто `citiesSelected = cities`.
+       * Хотя тут хороший вопрос, следует ли вообще сохранять порядок
+       */
       this.cities.forEach(city => {
         if(!this.citiesSelected.includes(city)) {
           this.citiesSelected.push(city)
@@ -133,16 +153,21 @@ export default {
       if(!this.isUpdateDisabled && this.citiesSelected.length) {
         const millisecondsPerMinute = 60 * 1000;
 
-        this.isUpdateDisabled = true;
+        this.isUpdateDisabled = true; // Я бы скорее опустил эту строку под цикл
+                                      // (тогда у тебя логика выключения и включения лежала бы в одном месте)
         this.$refs.cards.forEach((card) => {
           card.updateData();
         })
-        setTimeout(() => {
+        setTimeout(() => { // Может сбрасывать этот таймаут по изменению списка активных городов?
           this.isUpdateDisabled = false;
         }, millisecondsPerMinute * 5);
       }
     },
     onDeleteCity(city) {
+      /**
+       * По идее сейчас под капотом 2 прохода делается (первый на indexOf, второй на splice).
+       * Можно через filter, тогда в 1 проход должен уложиться. Хотя мб мне просто так привычнее.
+       */
       this.citiesSelected.splice(this.citiesSelected.indexOf(city), 1);
     }
   }
@@ -150,7 +175,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.button {
+.button { // Стили кнопки явно не в компоненте должны лежать)
   display: block;
   font-size: 1.5rem;
   line-height: 1.5em;
@@ -207,7 +232,7 @@ input[type='checkbox'] {
   background-color: var(--color-bg);
   border-right: solid 2px var(--color-bg-lighter);
   border-bottom: solid 2px var(--color-bg-lighter);
-  input {
+  input { // Тоже лучше в глобальный scss вынести
     width: 100%;
     font-size: 1.5rem;
     line-height: 1.5em;
