@@ -6,22 +6,7 @@
    2. Settings (Format settings (конкретно select, тоже можно в отдельный компонент) + кнопочка Update)
    3. Cities list (Список + кнопочки под ним)
    -->
-  <div class="search">
-    <!-- Ну по хорошему это форма должна быть (дед) -->
-    <input
-      class="search__input"
-      type="text"
-      placeholder="Search..."
-      v-model="searchValue"
-    >
-    <button
-      class="search__cross"
-      type="button"
-      @click="searchClear"
-    ></button>
-    <!-- А вот была бы форма, мог бы через input type="reset" сделать
-     https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/reset -->
-  </div>
+  <citiesSearch/>
   <ul class="list"
     role="list"
   >
@@ -103,11 +88,12 @@
 
 <script>
 import WeatherCard from './WeatherCard.vue'
+import citiesSearch from './citiesSearch.vue'
 import capitals from '../assets/capitals.json'
 
 export default {
   name: 'WeatherCards',
-  components: { WeatherCard },
+  components: { WeatherCard, citiesSearch },
 
   data() {
     return {
