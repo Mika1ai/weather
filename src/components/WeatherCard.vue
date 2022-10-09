@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import { temperatureFormatting } from "@/utils/temperatureFormatting.js";
+
 export default {
   name: 'WeatherCard',
   props: {
@@ -38,22 +40,8 @@ export default {
     };
   },
   computed: {
-    tempFormat() { // Можно просто temperature, но так тоже хорошо
-      let tempNew;
-      switch(this.unitValue) { // Вынеси в отдельную папку utils, не мешай логику компонента и вспомогательную
-        case '°C': {
-          tempNew = this.cityData.temp - 273.15;
-          break;
-        }
-        case '°F': {
-          tempNew = (this.cityData.temp - 273.15) * 1.8 + 32
-          break;
-        }
-        default: {
-          tempNew = this.cityData.temp;
-        }
-      }
-      return Math.round(tempNew);
+    tempFormat() {
+      return temperatureFormatting(this.cityData.temp, this.unitValue);
     }
   },
   mounted() {

@@ -92,7 +92,6 @@
 <script>
 import WeatherCard from './WeatherCard.vue'
 import citiesSearch from './citiesSearch.vue'
-import capitals from '../assets/capitals.json'
 
 export default {
   name: 'WeatherCards',
@@ -100,7 +99,7 @@ export default {
 
   data() {
     return {
-      cities: capitals,
+      cities: ['Minsk'],
       citiesSelected: [],
       units: ['K', '°C', '°F'],
       unitValue: '°C',
