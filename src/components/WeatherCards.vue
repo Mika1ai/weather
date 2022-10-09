@@ -6,7 +6,10 @@
    2. Settings (Format settings (конкретно select, тоже можно в отдельный компонент) + кнопочка Update)
    3. Cities list (Список + кнопочки под ним)
    -->
-  <citiesSearch/>
+  <citiesSearch
+    :isSearchReady="isSearchReady"
+    @addCity="onAddCity"
+  />
   <ul class="list"
     role="list"
   >
@@ -103,6 +106,7 @@ export default {
       unitValue: '°C',
       searchValue: '',
       isUpdateDisabled: false,
+      isSearchReady: true,
     }
   },
   computed: {
@@ -118,6 +122,13 @@ export default {
     }
   },
   methods: {
+    onAddCity(value) {
+      console.log(value);
+      this.isSearchReady = false;
+      // setTimeout(() => {
+      //   this.isSearchReady = true;
+      // }, 5000);
+    },
     searchClear() {
       this.searchValue = '';
     },
