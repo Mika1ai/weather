@@ -21,7 +21,8 @@
 </template>
 
 <script>
-import { temperatureFormatting } from "@/utils/temperatureFormatting.js";
+import getCityWeather from '@/services/weather/actions.js'
+import temperatureFormatting from "@/utils/temperatureFormatting.js";
 
 export default {
   name: 'WeatherCard',
@@ -35,7 +36,7 @@ export default {
       cityData: {
         temp: 0,
         description: '',
-        time: 0, // lastUpdated / lastUpdatedTime
+        lastUpdatedTime: 0,
       },
     };
   },
@@ -45,22 +46,22 @@ export default {
     }
   },
   mounted() {
-    if (sessionStorage.getItem(this.city)) {
-      const storageData = JSON.parse(sessionStorage.getItem(this.city));
-      const millisecondsPerMinute = 60 * 1000;
-      // const refreshDelay = millisecondsPerMinute * 5; Я бы что-нибудь такое еще добавил.
+    // if (sessionStorage.getItem(this.city)) {
+    //   const storageData = JSON.parse(sessionStorage.getItem(this.city));
+    //   const millisecondsPerMinute = 60 * 1000;
+    //   const refreshDelay = millisecondsPerMinute * 5;
 
-      if ((Date.now() - storageData.time) / millisecondsPerMinute > 5) {
-        this.updateData();
-      } else {
-        this.cityData.temp = storageData.temp;
-        this.cityData.description = storageData.description;
+    //   if ((Date.now() - storageData.lastUpdatedTime) > refreshDelay) {
+    //     this.updateData();
+    //   } else {
+    //     this.cityData.temp = storageData.temp;
+    //     this.cityData.description = storageData.description;
 
-        this.isCardLoaded = true;
-      }
-    } else {
+    //     this.isCardLoaded = true;
+    //   }
+    // } else {
       this.updateData();
-    }
+    // }
   },
   methods: {
     deleteCity() {
@@ -69,20 +70,10 @@ export default {
     updateData() {
       this.isCardLoaded = false;
 
-      const apiKey = '6ccafd44ac9ae5d3cda1ed97f1a23f2f'; // Ключ в приватный файл, его на гит не заливай
-      const axios = require('axios').default; // Импорты исключительно в начале js, и не через require, он не используется в модульном js
-      /**
-       * Все запросы к серверу в папочку services и импортируй из нее.
-       * И хорошо бы добавить обработку ошибок.
-       */
-      axios
-        .get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${apiKey}`
-        )
-        .then((response) => {
+      getCityWeather(this.city).then((response) => {
           this.cityData.temp = response.data.main.temp;
           this.cityData.description = response.data.weather[0].description;
-          this.cityData.time = Date.now();
+          this.cityData.lastUpdatedTime = Date.now();
 
           sessionStorage.setItem(this.city, JSON.stringify(this.cityData));
 

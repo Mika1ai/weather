@@ -1,4 +1,4 @@
-export function temperatureFormatting(temperature, unitValue) {
+const temperatureFormatting = (temperature, unitValue) => {
   let formatTemperature;
   switch(unitValue) {
     case '°C': {
@@ -15,3 +15,5 @@ export function temperatureFormatting(temperature, unitValue) {
   }
   return Math.round(formatTemperature);
 }
+
+export default temperatureFormatting;
